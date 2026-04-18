@@ -8,6 +8,8 @@ import com.cjgr.awandroide.data.repository.UserRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 sealed class TransactionState {
     object Idle : TransactionState()
@@ -27,12 +29,30 @@ class TransactionViewModel(
     private val _transacciones = MutableStateFlow<List<TransactionEntity>>(emptyList())
     val transacciones: StateFlow<List<TransactionEntity>> = _transacciones
 
+    private val _balanceCalculado = MutableStateFlow<Double?>(null)
+    val balanceCalculado: StateFlow<Double?> = _balanceCalculado
+
+    private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+
     fun cargarTransacciones(userId: Int) {
         viewModelScope.launch {
             _transactionState.value = TransactionState.Loading
             try {
                 val lista = transactionRepository.obtenerTransaccionesPorUsuario(userId)
-                _transacciones.value = lista
+
+                // Ordenar de más reciente a más antigua
+                val listaOrdenada = lista.sortedByDescending { tx ->
+                    try { dateFormat.parse(tx.fecha) } catch (e: Exception) { null }
+                }
+                _transacciones.value = listaOrdenada
+
+                // Recalcular balance sumando todos los montos del historial
+                if (lista.isNotEmpty()) {
+                    val balanceApi = lista.sumOf { it.monto }
+                    _balanceCalculado.value = balanceApi
+                    userRepository.actualizarSaldo(userId, balanceApi)
+                }
+
                 _transactionState.value = TransactionState.Idle
             } catch (e: Exception) {
                 _transactionState.value = TransactionState.Error(
@@ -41,6 +61,7 @@ class TransactionViewModel(
             }
         }
     }
+
     fun ingresarDinero(
         userId: Int,
         monto: Double,
@@ -55,7 +76,6 @@ class TransactionViewModel(
                     _transactionState.value = TransactionState.Error("Usuario no encontrado")
                     return@launch
                 }
-
                 val transaccion = TransactionEntity(
                     userId = userId,
                     fecha = fecha,
@@ -63,12 +83,10 @@ class TransactionViewModel(
                     descripcion = descripcion,
                     tipo = "ingreso"
                 )
-
                 transactionRepository.enviarTransaccion(transaccion)
                 userRepository.actualizarSaldo(userId, usuario.saldo + monto)
                 cargarTransacciones(userId)
                 _transactionState.value = TransactionState.Success("Dinero ingresado con éxito")
-
             } catch (e: Exception) {
                 _transactionState.value = TransactionState.Error(
                     e.message ?: "Error al ingresar dinero"
@@ -76,6 +94,7 @@ class TransactionViewModel(
             }
         }
     }
+
     fun realizarTransferencia(
         userId: Int,
         destinatarioCorreo: String,
@@ -109,7 +128,6 @@ class TransactionViewModel(
                     descripcion = "Transferencia a ${destinatario.correo}",
                     tipo = "egreso"
                 )
-
                 val transaccionIngreso = TransactionEntity(
                     userId = destinatario.id,
                     fecha = fecha,
@@ -120,13 +138,11 @@ class TransactionViewModel(
 
                 transactionRepository.enviarTransaccion(transaccionEgreso)
                 transactionRepository.enviarTransaccion(transaccionIngreso)
-
                 userRepository.actualizarSaldo(userId, remitente.saldo - monto)
                 userRepository.actualizarSaldo(destinatario.id, destinatario.saldo + monto)
 
                 cargarTransacciones(userId)
                 _transactionState.value = TransactionState.Success("Transferencia realizada con éxito")
-
             } catch (e: Exception) {
                 _transactionState.value = TransactionState.Error(
                     e.message ?: "Error al realizar transferencia"
