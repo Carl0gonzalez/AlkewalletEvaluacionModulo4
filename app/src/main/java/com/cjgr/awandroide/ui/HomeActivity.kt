@@ -60,6 +60,7 @@ class HomeActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
+        // Datos del usuario (nombre y saldo guardado en Room)
         lifecycleScope.launch {
             authViewModel.currentUser.collect { user ->
                 user?.let {
@@ -69,9 +70,19 @@ class HomeActivity : AppCompatActivity() {
             }
         }
 
+        // Lista de transacciones (ya ordenada desc por fecha en el ViewModel)
         lifecycleScope.launch {
             transactionViewModel.transacciones.collect { lista ->
                 adapter.submitList(lista)
+            }
+        }
+
+        // Balance recalculado desde el historial de la API (sobreescribe el de Room)
+        lifecycleScope.launch {
+            transactionViewModel.balanceCalculado.collect { balance ->
+                balance?.let {
+                    txtBalance.text = "$ %.2f".format(it)
+                }
             }
         }
 
