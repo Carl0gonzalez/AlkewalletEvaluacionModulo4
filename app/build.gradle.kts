@@ -43,6 +43,12 @@ dependencies {
     implementation(libs.androidx.constraintlayout)
     // RecyclerView
     implementation("androidx.recyclerview:recyclerview:1.3.2")
+    // Retrofit + Gson + OkHttp logging
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.converter.gson)
+    implementation(libs.okhttp.logging)
+    // Picasso para cargar imágenes de perfil
+    implementation(libs.picasso)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
