@@ -64,7 +64,19 @@
                 android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Usuario destino"
+        android:textSize="14sp"
+        android:textColor="#000000"
+        android:layout_marginBottom="8dp" />
 
+    <Spinner
+        android:id="@+id/spnUsuarioIngresar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_input_field" />
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

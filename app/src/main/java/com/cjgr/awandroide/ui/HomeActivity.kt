@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.cjgr.awandroide.R
 import com.cjgr.awandroide.controller.WalletController
+import com.cjgr.awandroide.model.UserPreferences
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -20,6 +21,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var txtEmpty: TextView
     private lateinit var rvTransactions: RecyclerView
     private lateinit var adapter: TransactionAdapter
+    private lateinit var txtSaludo: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -30,6 +32,7 @@ class HomeActivity : AppCompatActivity() {
         txtBalanceAmount = findViewById(R.id.txtBalanceAmount)
         txtEmpty = findViewById(R.id.txtEmptyTransactions)
         rvTransactions = findViewById(R.id.rvTransactions)
+        txtSaludo = findViewById(R.id.txtSaludo)
 
         adapter = TransactionAdapter(emptyList())
         rvTransactions.layoutManager = LinearLayoutManager(this)
@@ -43,12 +46,19 @@ class HomeActivity : AppCompatActivity() {
             startActivity(Intent(this, SendMoneyActivity::class.java))
         }
 
+        updateUserName()
         loadData()
     }
 
     override fun onResume() {
         super.onResume()
+        updateUserName()
         loadData()
+    }
+
+    private fun updateUserName() {
+        val nombre = UserPreferences.getName(this)
+        txtSaludo.text = "Hola, $nombre!"
     }
 
     private fun loadData() {

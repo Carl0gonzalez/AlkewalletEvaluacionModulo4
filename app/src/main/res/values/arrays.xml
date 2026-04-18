@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="usuarios_mock">
+        <item>Selecciona un usuario</item>
+        <item>Juan Pérez</item>
+        <item>María García</item>
+        <item>Carlos López</item>
+    </string-array>
+</resources>
