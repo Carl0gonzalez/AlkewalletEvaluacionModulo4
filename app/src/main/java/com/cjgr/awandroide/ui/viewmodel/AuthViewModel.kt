@@ -13,6 +13,7 @@ sealed class AuthState {
     object Loading : AuthState()
     data class LoginSuccess(val user: UserEntity) : AuthState()
     data class RegisterSuccess(val userId: Long) : AuthState()
+    data class ProfileUpdated(val user: UserEntity) : AuthState()
     data class Error(val message: String) : AuthState()
 }
 
@@ -71,6 +72,45 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                 _currentUser.value = user
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "Error al cargar usuario")
+            }
+        }
+    }
+
+    /**
+     * Actualiza nombre y correo del usuario en Room.
+     * Valida que los campos no estén vacíos y que el nuevo correo
+     * no esté ya ocupado por OTRO usuario.
+     */
+    fun actualizarPerfil(userId: Int, nuevoNombre: String, nuevoCorreo: String) {
+        viewModelScope.launch {
+            _authState.value = AuthState.Loading
+            try {
+                val nombre = nuevoNombre.trim()
+                val correo = nuevoCorreo.trim()
+
+                if (nombre.isEmpty() || correo.isEmpty()) {
+                    _authState.value = AuthState.Error("El nombre y correo no pueden estar vacíos")
+                    return@launch
+                }
+                if (!android.util.Patterns.EMAIL_ADDRESS.matcher(correo).matches()) {
+                    _authState.value = AuthState.Error("Ingresa un correo válido")
+                    return@launch
+                }
+
+                // Verificar que el correo nuevo no lo use otro usuario
+                val existente = userRepository.buscarPorCorreo(correo)
+                if (existente != null && existente.id != userId) {
+                    _authState.value = AuthState.Error("Ese correo ya está en uso por otro usuario")
+                    return@launch
+                }
+
+                userRepository.actualizarPerfil(userId, nombre, correo)
+
+                val usuarioActualizado = userRepository.buscarPorId(userId)
+                _currentUser.value = usuarioActualizado
+                _authState.value = AuthState.ProfileUpdated(usuarioActualizado!!)
+            } catch (e: Exception) {
+                _authState.value = AuthState.Error(e.message ?: "Error al actualizar perfil")
             }
         }
     }

@@ -1,6 +1,7 @@
 package com.cjgr.awandroide.ui
 
 import android.os.Bundle
+import android.util.Patterns
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
@@ -42,13 +43,13 @@ class SendMoneyActivity : AppCompatActivity() {
         transactionViewModel = ViewModelProvider(this, factory)[TransactionViewModel::class.java]
         authViewModel = ViewModelProvider(this, factory)[AuthViewModel::class.java]
 
-        val txtNombre = findViewById<TextView>(R.id.txtNombreUsuario)
-        val txtCorreo = findViewById<TextView>(R.id.txtCorreoUsuario)
+        val txtNombre     = findViewById<TextView>(R.id.txtNombreUsuario)
+        val txtCorreo     = findViewById<TextView>(R.id.txtCorreoUsuario)
         val edtDestinatario = findViewById<EditText>(R.id.edtDestinatario)
-        val edtMonto = findViewById<EditText>(R.id.edtMonto)
-        val edtNota = findViewById<EditText>(R.id.edtNota)
-        val btnEnviar = findViewById<Button>(R.id.btnEnviarConfirm)
-        val imgBack = findViewById<ImageView>(R.id.imgBack)
+        val edtMonto      = findViewById<EditText>(R.id.edtMonto)
+        val edtNota       = findViewById<EditText>(R.id.edtNota)
+        val btnEnviar     = findViewById<Button>(R.id.btnEnviarConfirm)
+        val imgBack       = findViewById<ImageView>(R.id.imgBack)
 
         imgBack.setOnClickListener { finish() }
 
@@ -64,11 +65,17 @@ class SendMoneyActivity : AppCompatActivity() {
         if (userId != -1) authViewModel.cargarUsuario(userId)
 
         btnEnviar.setOnClickListener {
-            val destinatario = edtDestinatario.text.toString().trim()
-            val montoStr = edtMonto.text.toString().trim()
+            val destinatarioCorreo = edtDestinatario.text.toString().trim()
+            val montoStr           = edtMonto.text.toString().trim()
 
-            if (destinatario.isEmpty() || montoStr.isEmpty()) {
+            // ── Validaciones ──────────────────────────────────────────────
+            if (destinatarioCorreo.isEmpty() || montoStr.isEmpty()) {
                 Toast.makeText(this, "Completa todos los campos", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            if (!Patterns.EMAIL_ADDRESS.matcher(destinatarioCorreo).matches()) {
+                Toast.makeText(this, "Ingresa un correo de destinatario válido", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
@@ -78,13 +85,23 @@ class SendMoneyActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            // Verificar que no se transfiera a sí mismo
+            val correoPropio = txtCorreo.text.toString().trim()
+            if (destinatarioCorreo.equals(correoPropio, ignoreCase = true)) {
+                Toast.makeText(this, "No puedes transferirte dinero a ti mismo", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             val fecha = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
+            val nota  = edtNota.text.toString().trim().ifEmpty { "Transferencia" }
+
             transactionViewModel.realizarTransferencia(
-                userId = userId,
-                destinatarioCorreo = destinatario,
-                monto = monto,
-                fecha = fecha,
-                userRepository = UserRepository(AppDatabase.getDatabase(this).userDao())
+                userId             = userId,
+                destinatarioCorreo = destinatarioCorreo,
+                monto              = monto,
+                fecha              = fecha,
+                descripcion        = nota,
+                userRepository     = UserRepository(AppDatabase.getDatabase(this).userDao())
             )
         }
 

@@ -40,13 +40,11 @@ class TransactionViewModel(
             try {
                 val lista = transactionRepository.obtenerTransaccionesPorUsuario(userId)
 
-                // Ordenar de más reciente a más antigua
                 val listaOrdenada = lista.sortedByDescending { tx ->
                     try { dateFormat.parse(tx.fecha) } catch (e: Exception) { null }
                 }
                 _transacciones.value = listaOrdenada
 
-                // Recalcular balance sumando todos los montos del historial
                 if (lista.isNotEmpty()) {
                     val balanceApi = lista.sumOf { it.monto }
                     _balanceCalculado.value = balanceApi
@@ -62,12 +60,7 @@ class TransactionViewModel(
         }
     }
 
-    fun ingresarDinero(
-        userId: Int,
-        monto: Double,
-        fecha: String,
-        descripcion: String
-    ) {
+    fun ingresarDinero(userId: Int, monto: Double, fecha: String, descripcion: String) {
         viewModelScope.launch {
             _transactionState.value = TransactionState.Loading
             try {
@@ -95,25 +88,33 @@ class TransactionViewModel(
         }
     }
 
+    /**
+     * Valida que el destinatario exista en Room (usuarios previamente registrados)
+     * antes de ejecutar la transferencia. Acepta descripcion como parámetro.
+     */
     fun realizarTransferencia(
         userId: Int,
         destinatarioCorreo: String,
         monto: Double,
         fecha: String,
+        descripcion: String = "Transferencia",
         userRepository: UserRepository
     ) {
         viewModelScope.launch {
             _transactionState.value = TransactionState.Loading
             try {
-                val remitente = userRepository.buscarPorId(userId)
+                val remitente    = userRepository.buscarPorId(userId)
                 val destinatario = userRepository.buscarPorCorreo(destinatarioCorreo)
 
                 if (remitente == null) {
                     _transactionState.value = TransactionState.Error("Usuario no encontrado")
                     return@launch
                 }
+                // Destinatario debe existir en la BD local (usuario registrado previamente)
                 if (destinatario == null) {
-                    _transactionState.value = TransactionState.Error("Destinatario no encontrado")
+                    _transactionState.value = TransactionState.Error(
+                        "El destinatario no está registrado en la aplicación"
+                    )
                     return@launch
                 }
                 if (remitente.saldo < monto) {
@@ -125,14 +126,14 @@ class TransactionViewModel(
                     userId = userId,
                     fecha = fecha,
                     monto = -monto,
-                    descripcion = "Transferencia a ${destinatario.correo}",
+                    descripcion = "Para: ${destinatario.nombre} — $descripcion",
                     tipo = "egreso"
                 )
                 val transaccionIngreso = TransactionEntity(
                     userId = destinatario.id,
                     fecha = fecha,
                     monto = monto,
-                    descripcion = "Transferencia de ${remitente.correo}",
+                    descripcion = "De: ${remitente.nombre} — $descripcion",
                     tipo = "ingreso"
                 )
 
@@ -142,7 +143,9 @@ class TransactionViewModel(
                 userRepository.actualizarSaldo(destinatario.id, destinatario.saldo + monto)
 
                 cargarTransacciones(userId)
-                _transactionState.value = TransactionState.Success("Transferencia realizada con éxito")
+                _transactionState.value = TransactionState.Success(
+                    "Transferencia a ${destinatario.nombre} realizada con éxito"
+                )
             } catch (e: Exception) {
                 _transactionState.value = TransactionState.Error(
                     e.message ?: "Error al realizar transferencia"

@@ -7,22 +7,35 @@
     android:orientation="vertical"
     android:background="#FFFFFF">
 
+    <!-- Header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#F5F5F5"
         android:padding="16dp"
-        android:gravity="center">
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:id="@+id/imgBack"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_back"
+            android:contentDescription="Volver" />
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Mi perfil"
             android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="#000000" />
+            android:textColor="#000000"
+            android:gravity="center" />
+
+        <View android:layout_width="24dp" android:layout_height="24dp" />
     </LinearLayout>
 
+    <!-- Avatar + nombre + botón editar -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -62,13 +75,75 @@
                 android:textColor="#000000" />
 
             <ImageView
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:id="@+id/imgEditarPerfil"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:src="@drawable/ic_edit"
-                android:layout_marginStart="8dp" />
+                android:layout_marginStart="8dp"
+                android:contentDescription="Editar perfil"
+                android:clickable="true"
+                android:focusable="true" />
         </LinearLayout>
     </LinearLayout>
 
+    <!-- Formulario de edición (oculto por defecto) -->
+    <LinearLayout
+        android:id="@+id/layoutEditarPerfil"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="#F9F9F9"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nombre"
+            android:textSize="13sp"
+            android:textColor="#757575"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/edtNombrePerfil"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nombre completo"
+            android:inputType="textPersonName"
+            android:background="@android:drawable/edit_text"
+            android:padding="10dp"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Correo"
+            android:textSize="13sp"
+            android:textColor="#757575"
+            android:layout_marginBottom="4dp" />
+
+        <EditText
+            android:id="@+id/edtCorreoPerfil"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="correo@ejemplo.com"
+            android:inputType="textEmailAddress"
+            android:background="@android:drawable/edit_text"
+            android:padding="10dp"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btnGuardarPerfil"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Guardar cambios"
+            android:backgroundTint="#1A1A2E"
+            android:textColor="#FFFFFF"
+            android:textAllCaps="false"
+            android:padding="14dp" />
+    </LinearLayout>
+
+    <!-- Menú de opciones -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -84,20 +159,10 @@
             android:background="#F5F5F5"
             android:padding="16dp"
             android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Datos personales"
-                android:textSize="15sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="›"
-                android:textSize="22sp"
-                android:textColor="#757575" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:text="Datos personales" android:textSize="15sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="›" android:textSize="22sp" android:textColor="#757575" />
         </LinearLayout>
 
         <LinearLayout
@@ -107,20 +172,10 @@
             android:background="#F5F5F5"
             android:padding="16dp"
             android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Seguridad"
-                android:textSize="15sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="›"
-                android:textSize="22sp"
-                android:textColor="#757575" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:text="Seguridad" android:textSize="15sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="›" android:textSize="22sp" android:textColor="#757575" />
         </LinearLayout>
 
         <LinearLayout
@@ -130,20 +185,10 @@
             android:background="#F5F5F5"
             android:padding="16dp"
             android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Notificaciones"
-                android:textSize="15sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="›"
-                android:textSize="22sp"
-                android:textColor="#757575" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:text="Notificaciones" android:textSize="15sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="›" android:textSize="22sp" android:textColor="#757575" />
         </LinearLayout>
 
         <LinearLayout
@@ -153,20 +198,10 @@
             android:background="#F5F5F5"
             android:padding="16dp"
             android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Ayuda"
-                android:textSize="15sp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="›"
-                android:textSize="22sp"
-                android:textColor="#757575" />
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content"
+                android:layout_weight="1" android:text="Ayuda" android:textSize="15sp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content"
+                android:text="›" android:textSize="22sp" android:textColor="#757575" />
         </LinearLayout>
     </LinearLayout>
 

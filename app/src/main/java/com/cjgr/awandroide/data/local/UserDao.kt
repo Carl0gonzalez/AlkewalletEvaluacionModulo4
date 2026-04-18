@@ -33,6 +33,9 @@ interface UserDao {
     @Query("UPDATE users SET token = :token WHERE id = :userId")
     suspend fun updateToken(userId: Int, token: String?)
 
+    @Query("UPDATE users SET nombre = :nombre, correo = :correo WHERE id = :userId")
+    suspend fun updatePerfil(userId: Int, nombre: String, correo: String)
+
     @Query("DELETE FROM users")
     suspend fun deleteAllUsers()
 }
