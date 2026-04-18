@@ -17,7 +17,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Ingresar dinero"
+        android:text="Enviar dinero"
         android:textSize="22sp"
         android:textStyle="bold"
         android:textColor="#000000"
@@ -50,6 +50,7 @@
             android:layout_marginStart="12dp">
 
             <TextView
+                android:id="@+id/txtNombreUsuario"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Usuario"
@@ -57,6 +58,7 @@
                 android:textSize="16sp" />
 
             <TextView
+                android:id="@+id/txtCorreoUsuario"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="usuario@email.com"
@@ -68,16 +70,37 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Cantidad a ingresar"
+        android:text="Correo del destinatario"
         android:textSize="14sp"
         android:textColor="#000000"
         android:layout_marginBottom="8dp" />
 
     <EditText
-        android:id="@+id/edtMontoIngresar"
+        android:id="@+id/edtDestinatario"
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:background="@drawable/bg_input_field"
+        android:hint="correo@ejemplo.com"
+        android:inputType="textEmailAddress"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textSize="14sp"
+        android:textColor="#000000" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Monto a enviar"
+        android:textSize="14sp"
+        android:textColor="#000000"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/edtMonto"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:background="@drawable/bg_input_field_green"
         android:hint="$ 0.00"
         android:inputType="numberDecimal"
         android:paddingStart="16dp"
@@ -88,7 +111,7 @@
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Nota de transferencia"
+        android:text="Nota (opcional)"
         android:textSize="14sp"
         android:textColor="#000000"
         android:layout_marginTop="20dp"
@@ -106,11 +129,11 @@
         android:textColor="#000000" />
 
     <Button
-        android:id="@+id/btnIngresarDineroConfirm"
+        android:id="@+id/btnEnviarConfirm"
         android:layout_width="match_parent"
         android:layout_height="52dp"
-        android:text="Ingresar dinero"
-        android:backgroundTint="@color/colorCeleste"
+        android:text="Confirmar envío"
+        android:backgroundTint="@color/colorVerde"
         android:textColor="#FFFFFF"
         android:textSize="16sp"
         android:layout_marginTop="32dp"

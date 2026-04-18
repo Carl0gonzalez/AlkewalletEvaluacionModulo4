@@ -7,4 +7,5 @@
     <color name="colorGrisFondo">#F5F5F5</color>
     <color name="colorGrisTexto">#757575</color>
     <color name="colorNegro">#000000</color>
+    <color name="colorRojo">#E53935</color>
 </resources>

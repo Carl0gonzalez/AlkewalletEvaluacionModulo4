@@ -41,7 +41,41 @@ class TransactionViewModel(
             }
         }
     }
+    fun ingresarDinero(
+        userId: Int,
+        monto: Double,
+        fecha: String,
+        descripcion: String
+    ) {
+        viewModelScope.launch {
+            _transactionState.value = TransactionState.Loading
+            try {
+                val usuario = userRepository.buscarPorId(userId)
+                if (usuario == null) {
+                    _transactionState.value = TransactionState.Error("Usuario no encontrado")
+                    return@launch
+                }
 
+                val transaccion = TransactionEntity(
+                    userId = userId,
+                    fecha = fecha,
+                    monto = monto,
+                    descripcion = descripcion,
+                    tipo = "ingreso"
+                )
+
+                transactionRepository.enviarTransaccion(transaccion)
+                userRepository.actualizarSaldo(userId, usuario.saldo + monto)
+                cargarTransacciones(userId)
+                _transactionState.value = TransactionState.Success("Dinero ingresado con éxito")
+
+            } catch (e: Exception) {
+                _transactionState.value = TransactionState.Error(
+                    e.message ?: "Error al ingresar dinero"
+                )
+            }
+        }
+    }
     fun realizarTransferencia(
         userId: Int,
         destinatarioCorreo: String,

@@ -50,7 +50,6 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                     _authState.value = AuthState.Error("El correo ya está registrado")
                     return@launch
                 }
-
                 val nuevoUsuario = UserEntity(
                     nombre = nombre,
                     correo = correo,
