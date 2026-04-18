@@ -2,40 +2,31 @@ package com.cjgr.awandroide.data.repository
 
 import com.cjgr.awandroide.data.local.TransactionDao
 import com.cjgr.awandroide.data.local.TransactionEntity
-import com.cjgr.awandroide.data.remote.api.ApiService
-import com.cjgr.awandroide.data.remote.model.TransactionRequest
+import com.cjgr.awandroide.network.AlkeApiService
+import com.cjgr.awandroide.network.ApiTransaction
+import kotlin.math.abs
 
 class TransactionRepository(
     private val transactionDao: TransactionDao,
-    private val apiService: ApiService
+    private val apiService: AlkeApiService
 ) {
 
     suspend fun obtenerTransaccionesPorUsuario(userId: Int): List<TransactionEntity> {
         return try {
-            val response = apiService.getTransactions()
-            if (response.isSuccessful) {
-                val remoteTransactions = response.body().orEmpty()
-
-                val filtradas = remoteTransactions
-                    .filter { it.userId == userId }
-                    .map {
-                        TransactionEntity(
-                            id = it.id ?: 0,
-                            userId = it.userId,
-                            fecha = it.fecha,
-                            monto = it.monto,
-                            descripcion = it.descripcion,
-                            tipo = it.tipo
-                        )
-                    }
-
-                transactionDao.deleteTransactionsByUser(userId)
-                transactionDao.insertTransactions(filtradas)
-
-                filtradas
-            } else {
-                transactionDao.getTransactionsByUser(userId)
+            val remoteTransactions = apiService.getTransactions(userId.toString())
+            val mapeadas = remoteTransactions.map {
+                TransactionEntity(
+                    id = it.id.toIntOrNull() ?: 0,
+                    userId = it.userId.toIntOrNull() ?: userId,
+                    fecha = it.date,
+                    monto = if (it.type == "ENVIO") -it.amount else it.amount,
+                    descripcion = it.description,
+                    tipo = it.type
+                )
             }
+            transactionDao.deleteTransactionsByUser(userId)
+            transactionDao.insertTransactions(mapeadas)
+            mapeadas
         } catch (e: Exception) {
             transactionDao.getTransactionsByUser(userId)
         }
@@ -43,33 +34,18 @@ class TransactionRepository(
 
     suspend fun enviarTransaccion(transaction: TransactionEntity): Result<TransactionEntity> {
         return try {
-            val request = TransactionRequest(
-                userId = transaction.userId,
-                fecha = transaction.fecha,
-                monto = transaction.monto,
-                descripcion = transaction.descripcion,
-                tipo = transaction.tipo
+            val apiTx = ApiTransaction(
+                id = "",
+                userId = transaction.userId.toString(),
+                type = if (transaction.monto < 0) "ENVIO" else "INGRESO",
+                amount = abs(transaction.monto),
+                description = transaction.descripcion,
+                date = transaction.fecha
             )
-
-            val response = apiService.createTransaction(request)
-
-            if (response.isSuccessful) {
-                val body = response.body()
-
-                val savedTransaction = TransactionEntity(
-                    id = body?.id ?: transaction.id,
-                    userId = body?.userId ?: transaction.userId,
-                    fecha = body?.fecha ?: transaction.fecha,
-                    monto = body?.monto ?: transaction.monto,
-                    descripcion = body?.descripcion ?: transaction.descripcion,
-                    tipo = body?.tipo ?: transaction.tipo
-                )
-
-                transactionDao.insertTransaction(savedTransaction)
-                Result.success(savedTransaction)
-            } else {
-                Result.failure(Exception("Error al enviar la transacción"))
-            }
+            val resultado = apiService.createTransaction(apiTx)
+            val saved = transaction.copy(id = resultado.id.toIntOrNull() ?: transaction.id)
+            transactionDao.insertTransaction(saved)
+            Result.success(saved)
         } catch (e: Exception) {
             Result.failure(e)
         }
