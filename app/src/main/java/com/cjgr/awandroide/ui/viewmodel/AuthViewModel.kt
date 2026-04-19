@@ -14,6 +14,7 @@ sealed class AuthState {
     data class LoginSuccess(val user: UserEntity) : AuthState()
     data class RegisterSuccess(val userId: Long) : AuthState()
     data class ProfileUpdated(val user: UserEntity) : AuthState()
+    data class PhotoUpdated(val user: UserEntity) : AuthState()
     data class Error(val message: String) : AuthState()
 }
 
@@ -52,10 +53,10 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                     return@launch
                 }
                 val nuevoUsuario = UserEntity(
-                    nombre = nombre,
-                    correo = correo,
+                    nombre   = nombre,
+                    correo   = correo,
                     password = password,
-                    saldo = 0.0
+                    saldo    = 0.0
                 )
                 val id = userRepository.registrar(nuevoUsuario)
                 _authState.value = AuthState.RegisterSuccess(id)
@@ -78,8 +79,7 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
 
     /**
      * Actualiza nombre y correo del usuario en Room.
-     * Valida que los campos no estén vacíos y que el nuevo correo
-     * no esté ya ocupado por OTRO usuario.
+     * Valida campos vacíos y que el nuevo correo no esté ocupado por otro usuario.
      */
     fun actualizarPerfil(userId: Int, nuevoNombre: String, nuevoCorreo: String) {
         viewModelScope.launch {
@@ -96,8 +96,6 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                     _authState.value = AuthState.Error("Ingresa un correo válido")
                     return@launch
                 }
-
-                // Verificar que el correo nuevo no lo use otro usuario
                 val existente = userRepository.buscarPorCorreo(correo)
                 if (existente != null && existente.id != userId) {
                     _authState.value = AuthState.Error("Ese correo ya está en uso por otro usuario")
@@ -105,12 +103,29 @@ class AuthViewModel(private val userRepository: UserRepository) : ViewModel() {
                 }
 
                 userRepository.actualizarPerfil(userId, nombre, correo)
-
-                val usuarioActualizado = userRepository.buscarPorId(userId)
-                _currentUser.value = usuarioActualizado
-                _authState.value = AuthState.ProfileUpdated(usuarioActualizado!!)
+                val actualizado = userRepository.buscarPorId(userId)!!
+                _currentUser.value = actualizado
+                _authState.value = AuthState.ProfileUpdated(actualizado)
             } catch (e: Exception) {
                 _authState.value = AuthState.Error(e.message ?: "Error al actualizar perfil")
+            }
+        }
+    }
+
+    /**
+     * Guarda la URI de la imagen seleccionada desde la galería en Room
+     * y actualiza el StateFlow para que la UI reaccione sin necesidad de
+     * recargar la actividad.
+     */
+    fun actualizarFotoPerfil(userId: Int, uriString: String) {
+        viewModelScope.launch {
+            try {
+                userRepository.actualizarFotoPerfil(userId, uriString)
+                val actualizado = userRepository.buscarPorId(userId)!!
+                _currentUser.value = actualizado
+                _authState.value = AuthState.PhotoUpdated(actualizado)
+            } catch (e: Exception) {
+                _authState.value = AuthState.Error(e.message ?: "Error al actualizar foto")
             }
         }
     }
