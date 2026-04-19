@@ -3,6 +3,7 @@ package com.cjgr.awandroide.ui
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
@@ -18,6 +19,7 @@ import com.cjgr.awandroide.ui.adapter.TransactionAdapter
 import com.cjgr.awandroide.ui.viewmodel.AuthViewModel
 import com.cjgr.awandroide.ui.viewmodel.TransactionViewModel
 import com.cjgr.awandroide.ui.viewmodel.ViewModelFactory
+import com.squareup.picasso.Picasso
 import kotlinx.coroutines.launch
 
 class HomeActivity : AppCompatActivity() {
@@ -42,11 +44,25 @@ class HomeActivity : AppCompatActivity() {
 
         val txtSaludo = findViewById<TextView>(R.id.txtSaludo)
         val txtBalance = findViewById<TextView>(R.id.txtBalanceAmount)
+        val imgProfile = findViewById<ImageView>(R.id.imgProfile)
         val rvTransacciones = findViewById<RecyclerView>(R.id.rvTransacciones)
 
         adapter = TransactionAdapter()
         rvTransacciones.layoutManager = LinearLayoutManager(this)
         rvTransacciones.adapter = adapter
+
+        // ── Navegar a perfil desde saludo o foto ──────────────────────────
+        val irAPerfil = { _: android.view.View ->
+            val intent = Intent(this, ProfileActivity::class.java)
+            intent.putExtra("userId", userId)
+            startActivity(intent)
+        }
+        txtSaludo.setOnClickListener(irAPerfil)
+        imgProfile.setOnClickListener(irAPerfil)
+
+        // Hacer el saludo visualmente clickeable
+        txtSaludo.isClickable = true
+        txtSaludo.isFocusable = true
 
         findViewById<Button>(R.id.btnEnviarDinero).setOnClickListener {
             val intent = Intent(this, SendMoneyActivity::class.java)
@@ -60,24 +76,32 @@ class HomeActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Datos del usuario (nombre y saldo guardado en Room)
+        // Datos del usuario
         lifecycleScope.launch {
             authViewModel.currentUser.collect { user ->
                 user?.let {
                     txtSaludo.text = "Hola, ${it.nombre}!"
                     txtBalance.text = "$ %.2f".format(it.saldo)
+                    // Cargar foto de perfil en el header
+                    if (!it.fotoPerfil.isNullOrEmpty()) {
+                        Picasso.get()
+                            .load(it.fotoPerfil)
+                            .placeholder(R.drawable.ic_profile)
+                            .error(R.drawable.ic_profile)
+                            .fit()
+                            .centerCrop()
+                            .into(imgProfile)
+                    }
                 }
             }
         }
 
-        // Lista de transacciones (ya ordenada desc por fecha en el ViewModel)
         lifecycleScope.launch {
             transactionViewModel.transacciones.collect { lista ->
                 adapter.submitList(lista)
             }
         }
 
-        // Balance recalculado desde el historial de la API (sobreescribe el de Room)
         lifecycleScope.launch {
             transactionViewModel.balanceCalculado.collect { balance ->
                 balance?.let {

@@ -18,12 +18,17 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
+        <!-- Foto de perfil — clickeable para ir a ProfileActivity -->
         <ImageView
             android:id="@+id/imgProfile"
             android:layout_width="44dp"
             android:layout_height="44dp"
             android:src="@drawable/ic_profile"
-            android:contentDescription="@string/desc_foto_perfil" />
+            android:contentDescription="@string/desc_foto_perfil"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:scaleType="centerCrop" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -40,6 +45,7 @@
                 android:textColor="#FFFFFF"
                 android:textSize="12sp" />
 
+            <!-- Saludo — clickeable para ir a ProfileActivity -->
             <TextView
                 android:id="@+id/txtSaludo"
                 android:layout_width="wrap_content"
@@ -47,7 +53,14 @@
                 android:text="Hola, Usuario!"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:drawableEnd="@drawable/ic_edit"
+                android:drawablePadding="4dp"
+                android:drawableTint="#CCFFFFFF"
+                android:paddingEnd="4dp" />
         </LinearLayout>
 
         <ImageView
@@ -109,7 +122,6 @@
             android:background="#FFFFFF"
             android:padding="16dp">
 
-            <!-- Botones Enviar / Ingresar -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -143,7 +155,6 @@
                     app:cornerRadius="12dp" />
             </LinearLayout>
 
-            <!-- Título sección transacciones -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
@@ -153,7 +164,6 @@
                 android:textColor="#000000"
                 android:layout_marginBottom="12dp" />
 
-            <!-- Estado vacío (oculto por defecto, HomeActivity lo muestra si no hay datos) -->
             <TextView
                 android:id="@+id/txtEmptyTransactions"
                 android:layout_width="wrap_content"
@@ -165,7 +175,6 @@
                 android:layout_marginTop="24dp"
                 android:visibility="gone" />
 
-            <!-- Lista de transacciones dinámica -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvTransacciones"
                 android:layout_width="match_parent"
