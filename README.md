@@ -1,296 +1,217 @@
 # Alke Wallet
 
-Proyecto de billetera virtual desarrollado como entrega del **Módulo 4** (ABP).
+Aplicación de billetera virtual Android desarrollada como entrega del **Módulo 6 (ABP)**.
 
-La aplicación se centra en el **diseño de la interfaz y el flujo visual** de una wallet digital, permitiendo simular acciones como iniciar sesión, registrarse, consultar balance y navegar a pantallas para enviar o solicitar dinero. No implementa lógica real de autenticación ni operaciones financieras sobre un backend.
+Implementa autenticación local, transferencias entre usuarios, gestión de contactos, historial de transacciones e imagen de perfil con Picasso — todo con arquitectura **MVVM**, **Room** y **Coroutines**.
 
 ---
 
 ## Tecnologías utilizadas
 
-- **Lenguaje:** Kotlin
-- **Entorno:** Android Studio
-- **UI:** Layouts XML (ConstraintLayout, LinearLayout, etc.)
-- **Recursos:** Imágenes, íconos y tipografías exportadas desde Figma
+| Capa | Tecnología |
+|---|---|
+| Lenguaje | Kotlin |
+| Arquitectura | MVVM (ViewModel + StateFlow) |
+| Base de datos local | Room 2.7 |
+| Red | Retrofit 2.11 + OkHttp logging |
+| Imágenes | Picasso 2.8 |
+| Concurrencia | Kotlin Coroutines 1.9 |
+| Inyección de dependencias | Manual (ViewModelFactory) |
+| Pruebas | JUnit 4 + Mockito-Kotlin 5.4 + coroutines-test |
+| Build | Gradle KTS + KSP |
 
 ---
 
-## Estructura de carpetas del proyecto
+## Arquitectura MVVM
 
-```text
-.
-├── app
-│   ├── build.gradle.kts
-│   ├── proguard-rules.pro
-│   └── src
-│       ├── androidTest
-│       │   └── java
-│       │       └── com
-│       │           └── cjgr
-│       │               └── awandroide
-│       │                   └── ExampleInstrumentedTest.kt
-│       ├── main
-│       │   ├── AndroidManifest.xml
-│       │   ├── java
-│       │   │   └── com
-│       │   │       └── cjgr
-│       │   │           └── awandroide
-│       │   │               ├── MainActivity.kt
-│       │   │               └── ui
-│       │   │                   ├── HomeActivity.kt
-│       │   │                   ├── HomeEmptyActivity.kt
-│       │   │                   ├── LoginActivity.kt
-│       │   │                   ├── ProfileActivity.kt
-│       │   │                   ├── RequestMoneyActivity.kt
-│       │   │                   ├── SendMoneyActivity.kt
-│       │   │                   ├── SignupActivity.kt
-│       │   │                   ├── SplashActivity.kt
-│       │   │                   └── WelcomeActivity.kt
-│       │   └── res
-│       │       ├── color
-│       │       │   └── text_input_stroke.xml
-│       │       ├── drawable
-│       │       │   ├── back_icon.xml
-│       │       │   ├── bg_header_celeste.xml
-│       │       │   ├── bg_home.xml
-│       │       │   ├── bg_input_field_green.xml
-│       │       │   ├── bg_input_field.xml
-│       │       │   ├── bg_login.png
-│       │       │   ├── empty_illustration.xml
-│       │       │   ├── ic_back.xml
-│       │       │   ├── ic_edit.xml
-│       │       │   ├── ic_empty.xml
-│       │       │   ├── ic_launcher_background.xml
-│       │       │   ├── ic_launcher_foreground.xml
-│       │       │   ├── ic_logo_alke.xml
-│       │       │   ├── ic_notification.xml
-│       │       │   ├── ic_profile.xml
-│       │       │   ├── ic_request.xml
-│       │       │   ├── ic_send.xml
-│       │       │   ├── ic_splash_logo.png
-│       │       │   ├── ic_view_password.xml
-│       │       │   └── view_icon_1.xml
-│       │       ├── layout
-│       │       │   ├── activity_home_empty.xml
-│       │       │   ├── activity_home.xml
-│       │       │   ├── activity_login.xml
-│       │       │   ├── activity_main.xml
-│       │       │   ├── activity_profile.xml
-│       │       │   ├── activity_request_money.xml
-│       │       │   ├── activity_send_money.xml
-│       │       │   ├── activity_signup.xml
-│       │       │   ├── activity_splash.xml
-│       │       │   └── activity_welcome.xml
-│       │       ├── mipmap-anydpi-v26
-│       │       │   ├── ic_launcher_round.xml
-│       │       │   └── ic_launcher.xml
-│       │       ├── mipmap-hdpi
-│       │       │   ├── ic_launcher_round.webp
-│       │       │   └── ic_launcher.webp
-│       │       ├── mipmap-mdpi
-│       │       │   ├── ic_launcher_round.webp
-│       │       │   └── ic_launcher.webp
-│       │       ├── mipmap-xhdpi
-│       │       │   ├── ic_launcher_round.webp
-│       │       │   └── ic_launcher.webp
-│       │       ├── mipmap-xxhdpi
-│       │       │   ├── ic_launcher_round.webp
-│       │       │   └── ic_launcher.webp
-│       │       ├── mipmap-xxxhdpi
-│       │       │   ├── ic_launcher_round.webp
-│       │       │   └── ic_launcher.webp
-│       │       ├── values
-│       │       │   ├── colors.xml
-│       │       │   ├── strings.xml
-│       │       │   └── themes.xml
-│       │       ├── values-night
-│       │       │   └── themes.xml
-│       │       └── xml
-│       │           ├── backup_rules.xml
-│       │           └── data_extraction_rules.xml
-│       └── test
-│           └── java
-│               └── com
-│                   └── cjgr
-│                       └── awandroide
-│                           └── ExampleUnitTest.kt
-├── build.gradle.kts
-├── gradle
-│   ├── gradle-daemon-jvm.properties
-│   ├── libs.versions.toml
-│   └── wrapper
-│       ├── gradle-wrapper.jar
-│       └── gradle-wrapper.properties
-├── gradle.properties
-├── gradlew
-├── gradlew.bat
-├── local.properties
-├── README.md
-└── settings.gradle.kts
+```
+UI (Activity)
+  │  observa StateFlow
+  ▼
+ViewModel  ──►  Repository  ──►  DAO (Room)  ──►  SQLite
+                           ──►  RetrofitClient (API)
 ```
 
-> El árbol anterior refleja la estructura real del proyecto, con cada **Activity**, layout y recurso organizado en su carpeta correspondiente.
+- **Activities**: solo manejan UI y eventos de usuario.
+- **ViewModels**: contienen la lógica de negocio, exponen `StateFlow` y nunca referencian `Context`.
+- **Repositories**: abstraen el origen de datos (Room o Retrofit).
+- **Entities/DAOs**: definen el esquema de la BD y las consultas.
 
 ---
 
-## Flujo de navegación (diagrama Mermaid)
+## Estructura del proyecto
+
+```text
+app/src/main/java/com/cjgr/awandroide/
+├── data/
+│   ├── local/
+│   │   ├── AppDatabase.kt          # Room DB v2, fallbackToDestructiveMigration
+│   │   ├── UserEntity.kt           # id, nombre, correo, password, saldo, fotoPerfil, token
+│   │   ├── UserDao.kt              # CRUD + updateFotoPerfil
+│   │   ├── TransactionEntity.kt
+│   │   ├── TransactionDao.kt
+│   │   ├── ContactEntity.kt
+│   │   └── ContactDao.kt
+│   └── repository/
+│       ├── UserRepository.kt
+│       ├── TransactionRepository.kt
+│       └── ContactRepository.kt
+├── network/
+│   ├── RetrofitClient.kt
+│   └── ApiService.kt
+├── ui/
+│   ├── viewmodel/
+│   │   ├── AuthViewModel.kt        # login, registrar, actualizarPerfil, actualizarFotoPerfil
+│   │   ├── TransactionViewModel.kt # ingresarDinero, realizarTransferencia, cargarTransacciones
+│   │   ├── ContactViewModel.kt
+│   │   ├── ViewModelFactory.kt
+│   │   └── AuthState / TransactionState (sealed classes)
+│   ├── SplashActivity.kt
+│   ├── WelcomeActivity.kt
+│   ├── LoginActivity.kt
+│   ├── SignupActivity.kt
+│   ├── HomeActivity.kt
+│   ├── HomeEmptyActivity.kt
+│   ├── ProfileActivity.kt          # Picasso + selector de galería
+│   ├── SendMoneyActivity.kt        # Contacto guardado ó correo manual
+│   ├── RequestMoneyActivity.kt
+│   └── ContactsActivity.kt
+app/src/test/java/com/cjgr/awandroide/
+├── AuthViewModelTest.kt            # 9 pruebas
+├── TransactionViewModelTest.kt     # 7 pruebas
+└── UserRepositoryTest.kt           # 8 pruebas
+```
+
+---
+
+## Flujo de navegación
 
 ```mermaid
 flowchart TD
-    A[SplashActivity\nactivity_splash.xml] --> B[WelcomeActivity\nactivity_welcome.xml]
-
-    B --> C[LoginActivity\nactivity_login.xml]
-    B --> D[SignupActivity\nactivity_signup.xml]
-
-    C --> E[HomeActivity\nactivity_home.xml]
+    A[SplashActivity] --> B[WelcomeActivity]
+    B --> C[LoginActivity]
+    B --> D[SignupActivity]
+    C --> E[HomeActivity]
     D --> C
-
-    E --> F[SendMoneyActivity\nactivity_send_money.xml]
-    E --> G[RequestMoneyActivity\nactivity_request_money.xml]
-    E --> H[ProfileActivity\nactivity_profile.xml]
-    E --> I[HomeEmptyActivity\nactivity_home_empty.xml]
-
+    E --> F[SendMoneyActivity]
+    E --> G[RequestMoneyActivity]
+    E --> H[ProfileActivity]
+    E --> I[HomeEmptyActivity]
+    E --> J[ContactsActivity]
     F --> E
     G --> E
     H --> E
     I --> E
 ```
 
-- **SplashActivity:** muestra el logo de Alke Wallet y el nombre de la app al iniciar.
-- **WelcomeActivity:** pantalla de bienvenida con opciones para crear cuenta o indicar que el usuario ya tiene cuenta.
-- **LoginActivity / SignupActivity:** formularios para iniciar sesión o registrarse (navegación simulada).
-- **HomeActivity:** pantalla principal con balance, saludo, transacciones y accesos a funciones clave.
-- **SendMoneyActivity / RequestMoneyActivity:** pantallas para ingresar o enviar dinero.
-- **ProfileActivity:** pantalla de perfil del usuario.
-- **HomeEmptyActivity:** variación de Home sin transacciones.
+---
+
+## Funcionalidades implementadas
+
+### Autenticación
+- Registro con validación de correo duplicado.
+- Login con credenciales almacenadas en Room.
+- Cierre de sesión limpia el estado del ViewModel.
+
+### Perfil de usuario
+- Edición de nombre y correo con validaciones (vacío, formato, correo en uso).
+- **Imagen de perfil con Picasso**: el usuario abre la galería del dispositivo con `ACTION_OPEN_DOCUMENT`, se persiste el permiso de lectura con `takePersistableUriPermission` y la URI se guarda en Room. Picasso la carga con `placeholder` y `error` apuntando a `ic_profile`.
+
+### Transferencias
+- Ingreso de dinero propio.
+- Transferencia a cualquier correo (el destinatario no necesita estar registrado localmente).
+- Si el destinatario existe en Room, se registra automáticamente su ingreso.
+- Validación de saldo suficiente antes de procesar.
+
+### Destinatario en SendMoney
+- Seleccionar un contacto guardado.
+- Agregar un nuevo contacto (navega a `ContactsActivity`).
+- Ingresar correo manualmente (toggle con `EditText`).
+
+### Historial
+- Transacciones ordenadas por fecha descendente.
+- Balance calculado como suma de todos los montos del historial.
 
 ---
 
-## Pantallas implementadas
+## Pruebas unitarias
 
-### 1. Splash Screen
+Las pruebas usan **JUnit 4**, **Mockito-Kotlin** y **kotlinx-coroutines-test** con `UnconfinedTestDispatcher`. No requieren emulador ni dispositivo físico.
 
-- Fondo de color sólido de la marca.
-- Logo de **Alke Wallet** centrado.
-- Nombre de la aplicación bajo el logo.
-- Se muestra al iniciar la app durante unos segundos antes de pasar al flujo de bienvenida.
+### Ejecutar todas las pruebas
 
-### 2. Login / Signup Page (Welcome)
+```bash
+./gradlew test
+```
 
-- Pantalla de bienvenida donde el usuario puede elegir entre **Crear nueva cuenta** o **Ya tiene cuenta**.
-- Dividida en dos zonas:
-  - Zona superior con fondo celeste y borde inferior redondeado (`bg_header_celeste.xml`), mostrando logo y nombre de la app.
-  - Zona inferior con fondo blanco y botones de acción.
-- Botón principal **"Crear nueva cuenta"** (fondo celeste, bordes redondeados, texto blanco).
-- Texto/botón secundario **"Ya tiene cuenta"** sin fondo, con texto celeste.
-
-### 3. Login Page
-
-- Título descriptivo de la pantalla.
-- Campos etiquetados **Email** y **Contraseña**.
-- Campo de texto + campo de contraseña con ícono para mostrar/ocultar.
-- Texto de ayuda **"Olvidaste tu contraseña"**.
-- Fondo con imagen de acuerdo al diseño de Figma.
-- Botón primario **"Login"** (fondo celeste, bordes redondeados).
-- Botón secundario **"Crear una nueva cuenta"** sin fondo y texto celeste.
-- Pulsar **Login** simula la navegación a **HomeActivity** mediante un `Intent`.
-
-### 4. Signup Page
-
-- Título de registro.
-- Cinco campos de entrada:
-  - Tres de texto (nombre completo, email, confirmación de email u otros datos).
-  - Dos de contraseña con opción de visualización.
-- Fondo con imagen.
-- Botón principal para confirmar el registro (celeste, bordes redondeados).
-- Botón secundario para volver al Login, sin fondo y texto celeste.
-
-### 5. Home Page
-
-- Fondo celeste con imagen/degradado en la cabecera.
-- Textos principales: **Inicio**, saludo al usuario, **Balance** y monto disponible.
-- Imagen de perfil y campanita de notificaciones.
-- Sector blanco inferior con botones:
-  - **Enviar dinero** (fondo verde, bordes redondeados).
-  - **Ingresar dinero** (fondo celeste, bordes redondeados).
-- Lista de transacciones con avatar, nombre, ícono de tipo (ingreso/envío), fecha y monto con signo.
-
-### 6. Home Page – Empty Case
-
-- Misma estructura que HomeActivity.
-- Sin transacciones: se muestra un estado vacío con ilustración y mensaje indicando que aún no hay movimientos.
-
-### 7. Profile Page
-
-- Barra superior gris con el texto **Mi perfil**.
-- Imagen de perfil con bordes redondeados y círculo blanco de fondo.
-- Nombre de usuario con ícono de lápiz para edición.
-- Sector blanco con cuatro filas tipo tarjeta: ícono, texto y flecha de navegación.
-
-### 8. Send Money (Ingresar dinero)
-
-- Ícono de flecha y título **Ingresar dinero**.
-- Línea divisoria bajo la cabecera.
-- Bloque con datos del usuario/destinatario: foto, nombre y correo.
-- Textos guía **Cantidad a ingresar** y **Nota de transferencia**.
-- Campos de usuario:
-  - Campo numérico con borde celeste.
-  - Campo de texto para la nota.
-- Botón **Ingresar dinero** (color celeste, bordes redondeados).
-
-### 9. Request Money (Enviar / Solicitar dinero)
-
-- Ícono de flecha y título **Enviar dinero**.
-- Línea divisoria bajo la cabecera.
-- Perfil del contacto con inicial, nombre y correo.
-- Textos guía **Cantidad a ingresar** y **Nota de transferencia**.
-- Campos de usuario:
-  - Campo numérico con borde verde.
-  - Campo de texto para la nota.
-- Botón principal **Ingresar dinero** (celeste, bordes redondeados).
+O desde Android Studio: clic derecho sobre la carpeta `test` → **Run Tests**.
 
 ---
 
-## Cómo ejecutar el proyecto en local
+### `AuthViewModelTest` — 9 pruebas
 
-1. **Clonar el repositorio**
+| # | Prueba | Resultado esperado |
+|---|---|---|
+| 1 | `login correcto` | `AuthState.LoginSuccess` con el usuario |
+| 2 | `login credenciales incorrectas` | `AuthState.Error` |
+| 3 | `registrar usuario nuevo` | `AuthState.RegisterSuccess` con id=5 |
+| 4 | `registrar correo duplicado` | `AuthState.Error` con mensaje "registrado" |
+| 5 | `actualizarPerfil datos válidos` | `AuthState.ProfileUpdated` con nombre actualizado |
+| 6 | `actualizarPerfil nombre vacío` | `AuthState.Error` |
+| 7 | `actualizarPerfil correo inválido` | `AuthState.Error` |
+| 8 | `actualizarPerfil correo en uso por otro` | `AuthState.Error` con mensaje "uso" |
+| 9 | `actualizarFotoPerfil` | `AuthState.PhotoUpdated` con URI guardada |
+| 10 | `cerrarSesion` | `currentUser = null`, estado `Idle` |
 
+---
+
+### `TransactionViewModelTest` — 7 pruebas
+
+| # | Prueba | Resultado esperado |
+|---|---|---|
+| 1 | `ingresarDinero usuario válido` | `Success` o `Idle` (internamente llama cargarTransacciones) |
+| 2 | `ingresarDinero usuario inexistente` | `Error("Usuario no encontrado")` |
+| 3 | `realizarTransferencia exitosa` | `Success` o `Idle` |
+| 4 | `realizarTransferencia saldo insuficiente` | `Error("Saldo insuficiente")` |
+| 5 | `realizarTransferencia remitente inexistente` | `Error("Usuario no encontrado")` |
+| 6 | `realizarTransferencia registra ingreso destinatario local` | `enviarTransaccion` llamado con `userId=2, tipo="ingreso"` |
+| 7 | `cargarTransacciones ordena por fecha desc` | Lista con `18/04 > 10/04 > 01/04` |
+| 8 | `resetState devuelve Idle` | `TransactionState.Idle` |
+
+---
+
+### `UserRepositoryTest` — 8 pruebas
+
+| # | Prueba | Resultado esperado |
+|---|---|---|
+| 1 | `registrar llama insertUser` | Retorna id, verifica llamada al DAO |
+| 2 | `buscarPorCorreo existente` | Retorna `UserEntity` con nombre correcto |
+| 3 | `buscarPorCorreo inexistente` | Retorna `null` |
+| 4 | `actualizarSaldo llama updateSaldo` | Verifica parámetros en DAO |
+| 5 | `actualizarPerfil llama updatePerfil` | Verifica parámetros en DAO |
+| 6 | `actualizarFotoPerfil llama updateFotoPerfil` | Verifica URI en DAO |
+| 7 | `login credenciales correctas` | Retorna `UserEntity` |
+| 8 | `login credenciales incorrectas` | Retorna `null` |
+
+---
+
+## Cómo ejecutar el proyecto
+
+1. Clonar el repositorio y cambiarse al branch de entrega:
    ```bash
-   git clone https://github.com/Carl0gonzalez/AlkewalletEvaluacionModulo4.git
-   cd AlkewalletEvaluacionModulo4
+   git clone https://github.com/Carl0gonzalez/AlkewalletEvaluacionGeneral.git
+   cd AlkewalletEvaluacionGeneral
+   git checkout entregamodulo6
    ```
-
-2. **Abrir el proyecto en Android Studio**
-
-   - Abrir Android Studio.
-   - Menú **File > Open**.
-   - Seleccionar la carpeta del proyecto clonada.
-   - Esperar a que Gradle termine de sincronizar.
-
-3. **Configurar SDK y dispositivo/emulador**
-
-   - Asegurarse de tener instalado el **Android SDK** compatible con el `compileSdk` del proyecto.
-   - Crear un **AVD** (Android Virtual Device) o conectar un dispositivo físico con depuración USB.
-
-4. **Construir el proyecto**
-
-   - Menú **Build > Make Project**.
-   - Si aparecen errores de recursos (por ejemplo, atributos duplicados en algún `TextView`), revisar los archivos XML indicados en el mensaje y corregirlos.
-
-5. **Ejecutar la app**
-
-   - Seleccionar el emulador/dispositivo en la barra de herramientas.
-   - Pulsar **Run** (▶️) o usar **Run > Run 'app'**.
-   - La app se instalará y abrirá mostrando primero la **Splash Screen** y luego la pantalla **Welcome** con las opciones de Login y Signup.
-
-6. **Explorar el flujo completo**
-
-   - Desde **WelcomeActivity**, navegar a **LoginActivity** o **SignupActivity**.
-   - Completar el formulario y avanzar a **HomeActivity** (navegación simulada por `Intent`).
-   - Desde **HomeActivity**, acceder a **SendMoneyActivity**, **RequestMoneyActivity**, **ProfileActivity** y a la variación **HomeEmptyActivity**, y luego volver.
+2. Abrir en **Android Studio** y esperar la sincronización de Gradle.
+3. Seleccionar un AVD con API 24+ y pulsar **Run**.
+4. Para ejecutar las pruebas unitarias:
+   ```bash
+   ./gradlew test
+   ```
 
 ---
 
 ## Autor
-Carlo J. González Rojas
-Proyecto desarrollado como parte del **Módulo 4 - Alke Wallet** dentro del programa de formación en desarrollo Android.
+Carlo J. González Rojas  
+Proyecto desarrollado como parte del programa de formación Android — **Módulo 6 · Alke Wallet**.
