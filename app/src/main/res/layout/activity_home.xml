@@ -18,17 +18,25 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <!-- Foto de perfil — clickeable para ir a ProfileActivity -->
-        <ImageView
-            android:id="@+id/imgProfile"
+        <!-- Foto de perfil circular — clickeable para ir a ProfileActivity -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardFotoPerfil"
             android:layout_width="44dp"
             android:layout_height="44dp"
-            android:src="@drawable/ic_profile"
-            android:contentDescription="@string/desc_foto_perfil"
+            app:cardCornerRadius="22dp"
+            app:cardElevation="2dp"
             android:clickable="true"
             android:focusable="true"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:scaleType="centerCrop" />
+            android:foreground="?attr/selectableItemBackgroundBorderless">
+
+            <ImageView
+                android:id="@+id/imgProfile"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_profile"
+                android:contentDescription="@string/desc_foto_perfil"
+                android:scaleType="centerCrop" />
+        </androidx.cardview.widget.CardView>
 
         <LinearLayout
             android:layout_width="0dp"
