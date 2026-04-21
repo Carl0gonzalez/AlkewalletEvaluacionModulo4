@@ -1,24 +1,46 @@
 # 📱 AlkewalletEvaluacionGeneral
 
-Aplicación Android desarrollada en **Kotlin** como evaluación integradora del caso AlkeWallet, con pantallas de bienvenida, autenticación, perfil y movimientos.
+Aplicación Android desarrollada en **Kotlin** como evaluación integradora de AlkeWallet, con varias pantallas para flujo de bienvenida, login, perfil, envío y solicitud de dinero.
 
 ![Kotlin](https://img.shields.io/badge/Kotlin-Android-7F52FF?logo=kotlin) ![Android](https://img.shields.io/badge/Android-App-3DDC84?logo=android)
 
-## Descripción
+---
 
-El código fuente principal está en `app/src/main/java/com/cjgr/awandroide/` y organiza actividades para splash, login, home, perfil, envío y solicitud de dinero. También incluye recursos visuales y configuración de Gradle Kotlin DSL.
+## 📌 Objetivo
 
-## Objetivo
+Implementar una versión mobile de AlkeWallet aplicando navegación, diseño de interfaz y organización de pantallas en Android nativo.
 
-Construir una experiencia mobile nativa para el caso AlkeWallet, aplicando diseño de interfaz, navegación básica y estructura Android.
+## 🧩 Qué incluye
 
-## Uso
+- `SplashActivity`, `WelcomeActivity` y `LoginActivity`.
+- Pantallas para home, perfil, enviar y solicitar dinero.
+- Recursos visuales en `drawable`.
+- Configuración con Gradle Kotlin DSL.
+
+## 📁 Estructura
 
 ```bash
+AlkewalletEvaluacionGeneral/
+├── app/src/main/java/com/cjgr/awandroide/ui/
+├── app/src/main/res/
+├── build.gradle.kts
+├── settings.gradle.kts
+└── gradlew
+```
+
+## ▶️ Compilar
+
+```bash
+git clone git@github.com:Carl0gonzalez/AlkewalletEvaluacionGeneral.git
+cd AlkewalletEvaluacionGeneral
 ./gradlew build
 ```
 
-## Autor
+## 💡 Valor del proyecto
+
+Aporta al portafolio una pieza Android nativa con foco en interfaz, navegación y organización modular básica del código.
+
+## 👤 Autor
 
 **Carlo González**
 
